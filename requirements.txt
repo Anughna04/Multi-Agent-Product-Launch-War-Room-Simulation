@@ -1,0 +1,7 @@
+langgraph
+langchain
+langchain-core
+google-genai
+ollama
+pandas
+python-dotenv
