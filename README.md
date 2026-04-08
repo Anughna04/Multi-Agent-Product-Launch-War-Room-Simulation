@@ -117,26 +117,63 @@ graph TD
 ### System Workflow
 
 ```mermaid
-flowchart TD
-    Init[Initialize State: scenario_X] --> DataLoader[Load Scenario Data files]
-    DataLoader --> DataAgent[Data Analyst Node]
-    
-    DataAgent --> PM[PM Agent Node]
-    PM --> Marketing[Marketing Agent Node]
-    Marketing --> SRE[SRE Agent Node]
-    SRE --> Support[Support Agent Node]
-    Support --> Risk[Risk Critic Node]
-    
-    subgraph Agent Execution Logic
-        direction TB
-        LoadTools[Pre-Execute Data Tools] --> BuildPrompt[Inject Data into Strict LLM Prompt]
-        BuildPrompt --> InvokeLLM((Invoke LLaMA 3.2))
-        InvokeLLM --> ExtractJSON[Extract & Parse Strict JSON Output]
+graph TD
+    %% ====== STYLES ======
+    classDef llm fill:#4a154b,stroke:#000,stroke-width:2px,color:#fff;
+    classDef tool fill:#0052cc,stroke:#000,stroke-width:2px,color:#fff;
+    classDef sys fill:#1c2d3d,stroke:#000,stroke-width:2px,color:#fff;
+
+    %% ====== ENTRY ======
+    Start((Scenario Input)) --> Init[Initialize State<br/>scenario_X]:::sys
+    Init --> Loader[Scenario Loader<br/>Load Data Files]:::sys
+
+    %% ====== ORCHESTRATION ======
+    Loader --> Orchestrator[LangGraph Orchestrator<br/>Controls Agent Flow]:::llm
+
+    %% ====== AGENT PIPELINE ======
+    subgraph AgentPipeline["Autonomous War Room Agents"]
+        direction LR
+        DA[Data Analyst]:::llm --> PM[Product Manager]:::llm
+        PM --> MKT[Marketing Strategist]:::llm
+        MKT --> SRE[SRE / Infra Agent]:::llm
+        SRE --> CS[Customer Support Agent]:::llm
+        CS --> RISK[Risk Critic]:::llm
     end
-    
-    Risk --> Orchestrator[Orchestrator Node]
-    
-    Orchestrator --> Final[Console Print & Log Final Decision]
+
+    Orchestrator --> DA
+    RISK --> Orchestrator
+
+    %% ====== EXECUTION ENGINE ======
+    subgraph ExecutionEngine["Agent Execution Engine (Reusable Logic)"]
+        direction TB
+        Tools[Load Tools / External Data]:::tool
+        Prompt[Structured Prompt Builder]:::sys
+        LLM((LLaMA 3.2 via Ollama)):::llm
+        Parser[Strict JSON Parser<br/>Validation Layer]:::sys
+
+        Tools --> Prompt
+        Prompt --> LLM
+        LLM --> Parser
+    end
+
+    %% Each agent uses execution engine
+    DA -.-> Tools
+    PM -.-> Tools
+    MKT -.-> Tools
+    SRE -.-> Tools
+    CS -.-> Tools
+    RISK -.-> Tools
+
+    %% ====== DECISION ======
+    Orchestrator --> Decision{Final Decision}:::llm
+    Decision -->|PROCEED| Proceed[Launch Approved]:::sys
+    Decision -->|PAUSE| Pause[Hold Execution]:::sys
+    Decision -->|ROLLBACK| Rollback[Abort & Log Issues]:::sys
+
+    %% ====== OUTPUT ======
+    Proceed --> Output[(Logs + Console Output)]:::sys
+    Pause --> Output
+    Rollback --> Output
 ```
 
 ### Orchestrator Logic & Control
