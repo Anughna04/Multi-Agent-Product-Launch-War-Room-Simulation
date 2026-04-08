@@ -92,12 +92,12 @@ graph TD
     Data[data/scenario_*] --> DataLoader[Scenario Initializer]
     DataLoader --> LangGraph[LangGraph State Workflow]
     
-    subgraph Autonomous War Room Agents
+    subgraph AWR[Autonomous War Room Agents]
         DA[Data Analyst]
         PM[PM Agent]
         MKT[Marketing]
         SRE[SRE]
-        CS[Custom Support]
+        CS[Customer Support]
         RISK[Risk Critic]
     end
     
@@ -111,7 +111,7 @@ graph TD
     
     OrchestratorEngine -.Finalize.-> Decision[Launch Decision: PROCEED/PAUSE/ROLLBACK]
     
-    LocalLLM(Ollama: LLaMA 3.2) --> Autonomous War Room Agents
+    LocalLLM["Ollama: LLaMA 3.2"] --> DA
 ```
 
 ### System Workflow
