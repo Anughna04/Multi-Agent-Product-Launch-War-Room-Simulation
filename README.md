@@ -89,35 +89,6 @@ The system dynamically processes isolated scenarios found in the `data/` folder,
 ### System Architecture Diagram
 ```mermaid
 graph TD
-    Data[data/scenario_*] --> DataLoader[Scenario Initializer]
-    DataLoader --> LangGraph[LangGraph State Workflow]
-    
-    subgraph AWR[Autonomous War Room Agents]
-        DA[Data Analyst]
-        PM[PM Agent]
-        MKT[Marketing]
-        SRE[SRE]
-        CS[Customer Support]
-        RISK[Risk Critic]
-    end
-    
-    LangGraph -.-> DA
-    DA -.-> PM
-    PM -.-> MKT
-    MKT -.-> SRE
-    SRE -.-> CS
-    CS -.-> RISK
-    RISK -.-> OrchestratorEngine[Synthesizer Node]
-    
-    OrchestratorEngine -.Finalize.-> Decision[Launch Decision: PROCEED/PAUSE/ROLLBACK]
-    
-    LocalLLM["Ollama: LLaMA 3.2"] --> DA
-```
-
-### System Workflow
-
-```mermaid
-graph TD
     %% ====== STYLES ======
     classDef llm fill:#4a154b,stroke:#000,stroke-width:2px,color:#fff;
     classDef tool fill:#0052cc,stroke:#000,stroke-width:2px,color:#fff;
@@ -174,6 +145,87 @@ graph TD
     Proceed --> Output[(Logs + Console Output)]:::sys
     Pause --> Output
     Rollback --> Output
+```
+
+### System Workflow
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant U as User
+    participant O as Orchestrator (LangGraph)
+    participant LLM as LLaMA 3.2 (Ollama)
+    participant T as Tools/Data Layer
+    participant P as JSON Validator
+
+    participant DA as Data Analyst
+    participant PM as Product Manager
+    participant MKT as Marketing
+    participant SRE as SRE
+    participant CS as Support
+    participant RISK as Risk Critic
+
+    %% ===== PHASE 1: INIT =====
+    rect rgb(30, 30, 60)
+    U->>O: Submit Scenario_X
+    O->>O: Initialize State + Load Data
+    end
+
+    %% ===== PHASE 2: CORE ANALYSIS =====
+    rect rgb(40, 60, 90)
+    O->>DA: Analyze Data
+    DA->>T: Fetch Metrics
+    T-->>DA: Data
+    DA->>LLM: Generate Insights
+    LLM-->>DA: Response
+    DA->>P: Validate JSON
+    P-->>DA: Clean Output
+    DA-->>O: Data Summary
+    end
+
+    %% ===== PHASE 3: STRATEGY =====
+    rect rgb(60, 40, 90)
+    O->>PM: Define Strategy
+    PM->>LLM: Strategy Prompt
+    LLM-->>PM: Plan
+    PM->>P: Validate
+    PM-->>O: Strategy Output
+
+    O->>MKT: Build GTM Plan
+    MKT->>LLM: Campaign Prompt
+    LLM-->>MKT: Campaign Plan
+    MKT->>P: Validate
+    MKT-->>O: Marketing Plan
+    end
+
+    %% ===== PHASE 4: SYSTEM + USER IMPACT =====
+    rect rgb(40, 90, 70)
+    O->>SRE: Check Infra Readiness
+    SRE->>T: Fetch System Metrics
+    T-->>SRE: Infra Data
+    SRE->>LLM: Reliability Analysis
+    LLM-->>SRE: Insights
+    SRE->>P: Validate
+    SRE-->>O: Infra Status
+
+    O->>CS: Predict User Issues
+    CS->>LLM: Support Analysis
+    LLM-->>CS: Risks
+    CS->>P: Validate
+    CS-->>O: Support Insights
+    end
+
+    %% ===== PHASE 5: FINAL DECISION =====
+    rect rgb(90, 40, 40)
+    O->>RISK: Perform Final Risk Review
+    RISK->>LLM: Critical Evaluation
+    LLM-->>RISK: Risk Output
+    RISK->>P: Validate
+    RISK-->>O: Verdict
+
+    O->>O: Aggregate All Signals
+    O-->>U: Final Decision (PROCEED / PAUSE / ROLLBACK)
+    end
 ```
 
 ### Orchestrator Logic & Control
