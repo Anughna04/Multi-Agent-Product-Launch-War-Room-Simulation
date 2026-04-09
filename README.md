@@ -156,3 +156,9 @@ The orchestrator guarantees deterministic synthesis by abandoning LLM generation
 - **PAUSE Triggers:** Fired if signals are dangerously mixed (Risk between 0.5 and 0.9), blocking the launch for engineering triage.
 - **PROCEED Constraints:** Only authorized when all isolated variables successfully resolve as highly stable and optimal (Risk < 0.5, Low Negative Sentiment).
 - **Graceful Fallbacks:** If node anomalies or partial agent failures occur, it defaults to a `PAUSE` state and rigorously propagates generated diagnostic outputs to avoid null values at runtime.
+
+### 📧 For any queries, contact me at [anughnakandimalla11@gmail.com](anughnakandimalla11@gmail.com).
+
+## 👩‍💻Author
+
+Anughna
