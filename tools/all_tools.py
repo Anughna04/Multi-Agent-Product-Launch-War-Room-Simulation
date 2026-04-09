@@ -101,10 +101,26 @@ def anomaly_detection_tool(state: dict = None) -> Dict[str, Any]:
     except Exception as e:
         return {"error": str(e)}
 
+def _enrich_with_sentiment(data: list):
+    try:
+        from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+        analyzer = SentimentIntensityAnalyzer()
+        for item in data:
+            text = str(item.get("text", ""))
+            scores = analyzer.polarity_scores(text)
+            compound = scores["compound"]
+            if compound >= 0.35:
+                item["sentiment"] = "positive"
+            else:
+                item["sentiment"] = "negative"
+    except Exception:
+        pass # Fallback to existing hard-coded JSON sentiment if analyzer fails
+
 def sentiment_summary_tool(state: dict = None) -> Dict[str, Any]:
     try:
         from utils.logger import logger
         data = get_feedback_data(state)
+        _enrich_with_sentiment(data)
         logger.info(f"[SentimentTool] Loaded {len(data)} entries")
         
         positive = 0
@@ -156,6 +172,7 @@ def risk_scoring_tool(state: dict = None) -> Dict[str, Any]:
         latency_risk = min(last_day["api_latency_p95"] / 1000.0, 1.0)
         
         data = get_feedback_data(state)
+        _enrich_with_sentiment(data)
         total = max(len(data), 1)
         negative_count = sum(1 for item in data if str(item.get("sentiment", "")).strip().lower() == "negative")
         negative_pct = negative_count / total
